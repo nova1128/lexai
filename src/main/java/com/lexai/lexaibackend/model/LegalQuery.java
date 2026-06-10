@@ -13,7 +13,9 @@ public class LegalQuery {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String userEmail;
+    @ManyToOne
+    @JoinColumn(name="user_id")
+    private User user;
 
     @Column(columnDefinition = "TEXT")
     private String problemText;
