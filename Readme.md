@@ -1,189 +1,227 @@
-LexAI - AI-Powered Legal Assistant & Lawyer Connect Platform
+# LexAI - AI-Powered Legal Assistant & Lawyer Connect Platform
 
+A production-ready REST API backend that helps common people understand legal procedures by analyzing their problems against Indian law using AI, and connecting them with verified lawyers.
 
-Helping common people understand legal procedures using AI, and connecting them with verified lawyers.
+[![GitHub](https://img.shields.io/badge/GitHub-nova1128-black?logo=github)](https://github.com/nova1128)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Kavya%20Agarwal-blue?logo=linkedin)](https://www.linkedin.com/in/kavya-agarwal-787007327/)
+[![LeetCode](https://img.shields.io/badge/LeetCode-nova2811-orange?logo=leetcode)](https://leetcode.com/u/nova2811/)
 
+---
 
+## Table of Contents
 
-Table of Contents
+- [About](#about)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Database Schema](#database-schema)
+- [API Endpoints](#api-endpoints)
+- [Security](#security)
+- [Getting Started](#getting-started)
+- [Author](#author)
 
+---
 
-About
-Tech Stack
-Project Structure
-Database Schema
-API Endpoints
-Security
-Getting Started
-Author
+## About
 
+LexAI is a backend REST API that solves a real problem — most common people in India have no idea about their legal rights or what procedures apply to their situation. LexAI lets a user describe their legal problem in plain language, and the system analyzes it against Indian law using AI (OpenAI GPT-4o), returning relevant IPC sections, what supports their case, what works against them, and recommended next steps.
 
+The platform also has a Lawyer Connect module where users can browse verified lawyers by specialization and book consultations — so the AI assists rather than replaces legal professionals.
 
-About
+---
 
-LexAI is a production-ready REST API backend that analyzes legal problems against Indian law using AI (OpenAI GPT-4o) and returns:
+## Tech Stack
 
+| Layer | Technology |
+|-------|------------|
+| Language | Java 21 |
+| Framework | Spring Boot 3.5 |
+| Security | Spring Security, JWT, BCrypt |
+| Database | PostgreSQL hosted on Neon.tech |
+| AI Integration | OpenAI GPT-4o API |
+| DevOps | Docker, Railway |
+| Documentation | Swagger / OpenAPI |
+| Build Tool | Maven |
 
-Relevant IPC sections
-What supports your case
-What works against you
-Recommended legal steps
+---
 
+## Project Structure
 
-Users can also browse verified lawyers by specialization and book consultations directly through the platform.
-
-
-Tech Stack
-
-LayerTechnologyLanguageJava 21FrameworkSpring Boot 3.5SecuritySpring Security, JWT, BCryptDatabasePostgreSQL (Neon.tech)AIOpenAI GPT-4o APIDevOpsDocker, RailwayDocumentationSwagger / OpenAPIToolsMaven, Postman, IntelliJ IDEA
-
-
-Project Structure
-
+```
 src/main/java/com/lexai/lexaibackend/
-|
-+-- config/
-|   +-- SecurityConfig.java            # JWT filter, security rules
-|
-+-- controller/
-|   +-- AuthController.java            # Register, Login
-|   +-- LegalQueryController.java      # Submit and fetch queries
-|   +-- UserController.java            # User management
-|
-+-- service/
-|   +-- AuthService.java               # Registration and login logic
-|   +-- JwtService.java                # Token generation and validation
-|   +-- LegalQueryService.java         # Legal query business logic
-|   +-- UserService.java               # User business logic
-|
-+-- repository/
-|   +-- LegalQueryRepository.java      # Legal query database operations
-|   +-- LawyerProfileRepository.java   # Lawyer profile database operations
-|   +-- UserRepository.java            # User database operations
-|
-+-- model/
-|   +-- LegalQuery.java                # Legal query entity
-|   +-- LawyerProfile.java             # Lawyer profile entity
-|   +-- User.java                      # User entity
+├── config/
+│   └── SecurityConfig.java            # JWT filter and security rules
+├── controller/
+│   ├── AuthController.java            # Register and login endpoints
+│   ├── LegalQueryController.java      # Submit and fetch legal queries
+│   └── UserController.java            # User management
+├── service/
+│   ├── AuthService.java               # Registration and login logic
+│   ├── JwtService.java                # Token generation and validation
+│   ├── LegalQueryService.java         # Legal query business logic
+│   └── UserService.java               # User business logic
+├── repository/
+│   ├── LegalQueryRepository.java
+│   ├── LawyerProfileRepository.java
+│   └── UserRepository.java
+└── model/
+    ├── LegalQuery.java
+    ├── LawyerProfile.java
+    └── User.java
+```
 
+---
 
-Database Schema
+## Database Schema
 
-+------------------+          +-------------------------+
-|      users       |          |      legal_queries      |
-+------------------+          +-------------------------+
-| id (PK)          |<---------| id (PK)                 |
-| name             |          | user_id (FK)            |
-| email (unique)   |          | problem_text            |
-| password (hashed)|          | category                |
-| role             |          | created_at              |
-| created_at       |          +-------------------------+
-+------------------+
-|
-|
-v
-+----------------------+
-|    lawyer_profiles   |
-+----------------------+
-| id (PK)              |
-| user_id (FK)         |
-| specialization       |
-| experience           |
-| rating               |
-| available            |
-+----------------------+
+**users**
 
-Entity Relationships
+| Column | Type | Notes |
+|--------|------|-------|
+| id | BIGINT | Primary key, auto-increment |
+| name | VARCHAR | |
+| email | VARCHAR | Unique, not null |
+| password | VARCHAR | BCrypt hashed, not null |
+| role | VARCHAR | USER / LAWYER / ADMIN |
+| created_at | TIMESTAMP | Auto-set on insert |
 
+**legal_queries**
 
-One User can have many LegalQueries (OneToMany)
-One User can have one LawyerProfile (OneToOne)
-One LegalQuery belongs to one User (ManyToOne)
+| Column | Type | Notes |
+|--------|------|-------|
+| id | BIGINT | Primary key, auto-increment |
+| user_id | BIGINT | Foreign key to users |
+| problem_text | TEXT | |
+| category | VARCHAR | CIVIL / CRIMINAL / PROPERTY / FAMILY |
+| created_at | TIMESTAMP | Auto-set on insert |
 
+**lawyer_profiles**
 
+| Column | Type | Notes |
+|--------|------|-------|
+| id | BIGINT | Primary key, auto-increment |
+| user_id | BIGINT | Foreign key to users (unique) |
+| specialization | VARCHAR | |
+| experience | INTEGER | Years of experience |
+| rating | DOUBLE | |
+| available | BOOLEAN | |
 
-API Endpoints
+### Relationships
 
-Auth - No token required
+- One User has many LegalQueries (OneToMany)
+- One User has one LawyerProfile (OneToOne)
+- One LegalQuery belongs to one User (ManyToOne)
 
-MethodEndpointDescriptionPOST/api/auth/registerRegister a new userPOST/api/auth/loginLogin and receive JWT token
+---
 
-Legal Queries - Token required
+## API Endpoints
 
-MethodEndpointDescriptionPOST/api/legal/submitSubmit a legal problemGET/api/legal/allFetch all legal queries
+### Auth — No token required
 
-Users - Token required
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register a new user |
+| POST | `/api/auth/login` | Login and receive JWT token |
 
-MethodEndpointDescriptionGET/api/users/{id}Get user by ID
+### Legal Queries — Token required
 
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/legal/submit` | Submit a legal problem |
+| GET | `/api/legal/all` | Fetch all legal queries |
 
-Security
+### Users — Token required
 
-All endpoints except /api/auth/** require a valid JWT token.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/users/{id}` | Get user by ID |
 
-Include the token in every protected request header:
+---
 
+## Security
+
+All endpoints except `/api/auth/**` require a valid JWT token passed in the Authorization header.
+
+```
 Authorization: Bearer your_jwt_token_here
+```
 
-FeatureImplementationPassword StorageBCrypt hashing - plain text never storedAuthenticationJWT (JSON Web Tokens)Token Expiry1 hourAuthorizationRole-based access control (USER / LAWYER / ADMIN)StatelessNo server-side sessions
+| Feature | Implementation |
+|---------|----------------|
+| Password storage | BCrypt hashing — plain text never stored |
+| Authentication | JWT (JSON Web Tokens) |
+| Token expiry | 1 hour |
+| Authorization | Role-based access control (USER / LAWYER / ADMIN) |
+| Session policy | Stateless — no server-side sessions |
 
+---
 
-Getting Started
+## Getting Started
 
-Prerequisites
+### Prerequisites
 
+- Java 21 or higher
+- Maven
+- PostgreSQL database (or free [Neon.tech](https://neon.tech) account)
 
-Java 21+
-Maven
-PostgreSQL database (or free Neon.tech account)
+### Installation
 
+**1. Clone the repository**
 
-Installation
-
-1. Clone the repository
-
-bashgit clone https://github.com/Bhavya-jain07/lexai-backend.git
+```bash
+git clone https://github.com/nova1128/lexai-backend.git
 cd lexai-backend
+```
 
-2. Configure application.properties
+**2. Set up your database on [Neon.tech](https://neon.tech) and configure `application.properties`**
 
-propertiesspring.datasource.url=your_database_url
+```properties
+spring.datasource.url=your_neon_database_url
 spring.datasource.username=your_username
 spring.datasource.password=your_password
-jwt.secret=your_jwt_secret
+jwt.secret=your_256_bit_hex_secret
 jwt.expiration=3600000
+```
 
-3. Run the application
+**3. Run the application**
 
-bashmvn spring-boot:run
+```bash
+mvn spring-boot:run
+```
 
-4. API is available at
+**4. API is live at `http://localhost:8080`**
 
-http://localhost:8080
+### Quick API Test
 
-Testing the API
-
-Register a user:
-
-bashcurl -X POST http://localhost:8080/api/auth/register \
+Register:
+```bash
+curl -X POST http://localhost:8080/api/auth/register \
 -H "Content-Type: application/json" \
 -d '{"name":"Rahul","email":"rahul@gmail.com","password":"pass123","role":"USER"}'
+```
 
-Login and get token:
-
-bashcurl -X POST http://localhost:8080/api/auth/login \
+Login:
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
 -H "Content-Type: application/json" \
 -d '{"email":"rahul@gmail.com","password":"pass123"}'
+```
 
-Submit a legal query (use token from login response):
-
-bashcurl -X POST http://localhost:8080/api/legal/submit \
+Submit a legal query (use token from login):
+```bash
+curl -X POST http://localhost:8080/api/legal/submit \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer your_token_here" \
--d '{"problemText":"My landlord is not returning my deposit","category":"CIVIL"}'
+-d '{"problemText":"My landlord is not returning my security deposit","category":"CIVIL"}'
+```
 
+---
 
-Author
+## Author
 
-Kavya Agarwal
-B.Tech CSE - GLA University, Mathura
+**Kavya Agarwal**
+
+B.Tech CSE — GLA University, Mathura (2024-2028)
+
+[![GitHub](https://img.shields.io/badge/GitHub-nova1128-black?logo=github)](https://github.com/nova1128)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Kavya%20Agarwal-blue?logo=linkedin)](https://www.linkedin.com/in/kavya-agarwal-787007327/)
+[![LeetCode](https://img.shields.io/badge/LeetCode-nova2811-orange?logo=leetcode)](https://leetcode.com/u/nova2811/)
