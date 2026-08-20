@@ -17,7 +17,8 @@ public class AuthService {
     @Autowired
     private JWTService jwtService;
 
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     public User register(User user) {
         Optional<User> existing = userRepository.findByEmail(user.getEmail());
