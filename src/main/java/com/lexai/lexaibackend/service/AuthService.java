@@ -1,5 +1,7 @@
 package com.lexai.lexaibackend.service;
 
+import com.lexai.lexaibackend.exception.DuplicateResourceException;
+import com.lexai.lexaibackend.exception.ResourceNotFoundException;
 import com.lexai.lexaibackend.model.User;
 import com.lexai.lexaibackend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +25,7 @@ public class AuthService {
     public User register(User user) {
         Optional<User> existing = userRepository.findByEmail(user.getEmail());
         if (existing.isPresent()) {
-            throw new RuntimeException("User already exists with this email");
+            throw new DuplicateResourceException("User with Email already exists" +user.getEmail());
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
@@ -31,7 +33,7 @@ public class AuthService {
 
     public String login(String email, String password) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("No account found by email" + email ));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid password");

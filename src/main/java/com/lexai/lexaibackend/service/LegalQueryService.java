@@ -1,5 +1,6 @@
 package com.lexai.lexaibackend.service;
 
+import com.lexai.lexaibackend.exception.ResourceNotFoundException;
 import com.lexai.lexaibackend.model.LegalAnalysisResponse;
 import com.lexai.lexaibackend.model.LegalQuery;
 import com.lexai.lexaibackend.repository.LegalQueryRepository;
@@ -23,7 +24,7 @@ public class LegalQueryService {
 
     public LegalAnalysisResponse analyzeQuery(Long id) {
         LegalQuery query = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Query not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Legal Query not found with id" + id));
         return openAIService.analyzeLegalProblem(query.getProblemText(), query.getCategory());
     }
 
