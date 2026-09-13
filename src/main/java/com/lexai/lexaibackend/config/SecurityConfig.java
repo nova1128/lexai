@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -20,6 +21,7 @@ import java.io.IOException;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Autowired
@@ -37,15 +39,17 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(
+                                "/api/auth/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
-                                "/v3/api-docs",
+                                "/swagger-ui/index.html",
+                                "/v3/**",
                                 "/v3/api-docs/**",
-                                "/v3/api-docs.yaml",
+                                "/v3/api-docs",
                                 "/swagger-resources/**",
-                                "/webjars/**"
+                                "/webjars/**",
+                                "/actuator/**"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter(),
@@ -53,7 +57,6 @@ public class SecurityConfig {
 
         return http.build();
     }
-
     @Bean
     public OncePerRequestFilter jwtAuthFilter() {
         return new OncePerRequestFilter() {
@@ -62,6 +65,18 @@ public class SecurityConfig {
                                             HttpServletResponse response,
                                             FilterChain filterChain)
                     throws ServletException, IOException {
+
+                String path = request.getRequestURI();
+
+                // Skip JWT filter for public paths
+                if (path.startsWith("/api/auth/") ||
+                        path.startsWith("/swagger-ui") ||
+                        path.startsWith("/v3/api-docs") ||
+                        path.startsWith("/swagger-resources") ||
+                        path.startsWith("/webjars")) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
 
                 String authHeader = request.getHeader("Authorization");
 
@@ -89,5 +104,5 @@ public class SecurityConfig {
                 filterChain.doFilter(request, response);
             }
         };
-    }
-}
+    }}
+

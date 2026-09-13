@@ -28,6 +28,7 @@ public class AuthService {
             throw new DuplicateResourceException("User with Email already exists" +user.getEmail());
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRole(User.Role.USER);
         return userRepository.save(user);
     }
 
